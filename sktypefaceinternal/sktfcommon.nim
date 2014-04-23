@@ -59,7 +59,11 @@ method LoadPrivateFaceFromFile*(self: RTypefaceSystem; filename: string): RFontF
 
 # Kerning {{{1
 
-proc KerningPair*(self: FontFace; first, second: uint32): int
+method KerningPair*(self: FontFace; first, second: uint32): int =
+  ## Asks the font to look up the kerning pair between the first and
+  ## second Unicode code points. The number of pixels the second glyph
+  ## should be horizontally translated is returned.
+  return 0
 
 # }}} kerning
 
