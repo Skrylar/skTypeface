@@ -30,7 +30,7 @@ method LoadPublicFace*(self: RTypefaceSystem; face: string; style: NFaceStyle = 
   ## Loads a font with the given `face` name from the OS' reserve of
   ## globally installed fonts. Returns nil if the font is unloadable, or
   ## a reference to a font face object.
-  discard
+  doAssert(false)
 
 # }}} public fonts
 
@@ -39,12 +39,12 @@ method LoadPublicFace*(self: RTypefaceSystem; face: string; style: NFaceStyle = 
 method LoadPrivateFaceFromBuffer*(self: RTypefaceSystem; buffer: pointer; size: int): RFontFace =
   ## Loads a font file from the given filename. Returns nil if the font
   ## is unloadable, or a reference to a font face object.
-  discard
+  doAssert(false)
 
 method LoadPrivateFaceFromFile*(self: RTypefaceSystem; filename: string): RFontFace =
   ## Loads a font file from the given filename. Returns nil if the font
   ## is unloadable, or a reference to a font face object.
-  discard
+  doAssert(false)
 
 # }}} private fonts
 
@@ -63,7 +63,7 @@ method KerningPair*(self: FontFace; first, second: uint32): int =
   ## Asks the font to look up the kerning pair between the first and
   ## second Unicode code points. The number of pixels the second glyph
   ## should be horizontally translated is returned.
-  return 0
+  doAssert(false)
 
 # }}} kerning
 
