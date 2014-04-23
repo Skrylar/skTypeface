@@ -11,7 +11,7 @@ type
   RTypefaceSystem* = ref TypefaceSystem
   TypefaceSystem*  = object {.inheritable.}
 
-  RFontFace* = ref RFontFace
+  RFontFace* = ref FontFace
   FontFace*  = object {.inheritable.}
 
   ## Metrics for a single glyph within a font face. Note that skTypeface
