@@ -57,31 +57,52 @@ method LoadPrivateFaceFromFile*(self: RTypefaceSystem; filename: string): RFontF
 
 # }}}1 font information 
 
-# Glyph metrics {{{1
-
-proc GlyphMetrics*(self: FontFace; glyph: uint32): GlyphMetrics
-
-# }}} glyph metrics
-
 # Kerning {{{1
 
 proc KerningPair*(self: FontFace; first, second: uint32): int
 
 # }}} kerning
 
-# Rendering {{{1
+# Glyph duties {{{1
 
-method Rasterize*(self: FontFace; glyph: uint32; style: RasterizeStyle; cb: FRasterizeFacePixel) =
+# Selection {{{2
+
+method SelectGlyph*(self: FontFace; glyph: uint32) =
+  ## Asks the font to select a glyph with the given Unicode code point.
+  ## That glyph, if available, will be selected after this method is
+  ## called.
+  discard
+
+method DeselectGlyph*(self: FontFace) =
+  ## Asks the font to deselect the current glyph (if any.) No glyph will
+  ## be selected after this method is called.
+  discard
+
+# }}} selection
+
+# Metrics {{{2
+
+method MetricActiveGlyph*(self: FontFace): GlyphMetrics =
+  ## Asks the font for the metrics on the currently selected glyph.
+  doAssert(false)
+
+# }}} metrics
+
+# Rendering {{{2
+
+method RasterizeActiveGlyph*(self: FontFace; style: RasterizeStyle; cb: FRasterizeFacePixel) =
   ## Asks the font to rasterize a glyph in to a given rasterization
   ## style; the provided closure is invoked for each pixel, allowing
   ## full control over where the result is painted. On some backends
   ## this version of `Rasterize` avoids extra allocations.
   doAssert(false)
 
-method Rasterize*(self: FontFace; glyph: uint32; style: RasterizeStyle; width, height: var int): pointer =
+method RasterizeActiveGlyph*(self: FontFace; style: RasterizeStyle; width, height: var int): pointer =
   ## Asks the font to rasterize a glyph in to a given rasterization
   ## style, returning the buffer along with its width and height.
   doAssert(false)
 
 # }}} rendering
+
+# }}} glyph duties
 
