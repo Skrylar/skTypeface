@@ -1,4 +1,4 @@
 
 import sktypefaceinternal.sktfcommon
-export sktypefaceinternal.sktfcommon
+export sktfcommon
 
