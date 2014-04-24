@@ -8,6 +8,10 @@ type
     fsLight
     fsLightItalic
 
+  NRasterizeStyle* = enum
+    rsMonochrome
+    rsGreyscale
+
   RTypefaceSystem* = ref TypefaceSystem
   TypefaceSystem*  = object {.inheritable.}
 
@@ -94,14 +98,14 @@ method MetricActiveGlyph*(self: FontFace): FaceGlyphMetrics =
 
 # Rendering {{{2
 
-method RasterizeActiveGlyph*(self: FontFace; style: RasterizeStyle; cb: FRasterizeFacePixel) =
+method RasterizeActiveGlyph*(self: FontFace; style: NRasterizeStyle; cb: FRasterizeFacePixel) =
   ## Asks the font to rasterize a glyph in to a given rasterization
   ## style; the provided closure is invoked for each pixel, allowing
   ## full control over where the result is painted. On some backends
   ## this version of `Rasterize` avoids extra allocations.
   doAssert(false)
 
-method RasterizeActiveGlyph*(self: FontFace; style: RasterizeStyle; width, height: var int): pointer =
+method RasterizeActiveGlyph*(self: FontFace; style: NRasterizeStyle; width, height: var int): pointer =
   ## Asks the font to rasterize a glyph in to a given rasterization
   ## style, returning the buffer along with its width and height.
   doAssert(false)
