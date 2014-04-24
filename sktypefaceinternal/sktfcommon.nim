@@ -26,7 +26,7 @@ type
 
 # Public fonts {{{1
 
-method LoadPublicFace*(self: RTypefaceSystem; face: string; style: NFaceStyle = fsPlain): RFontFace =
+method LoadPublicFace*(self: RTypefaceSystem; face: string; size: int; style: NFaceStyle = fsPlain): RFontFace =
   ## Loads a font with the given `face` name from the OS' reserve of
   ## globally installed fonts. Returns nil if the font is unloadable, or
   ## a reference to a font face object.
@@ -36,12 +36,12 @@ method LoadPublicFace*(self: RTypefaceSystem; face: string; style: NFaceStyle = 
 
 # Private fonts {{{1
 
-method LoadPrivateFaceFromBuffer*(self: RTypefaceSystem; buffer: pointer; size: int): RFontFace =
+method LoadPrivateFaceFromBuffer*(self: RTypefaceSystem; size: int; buffer: pointer; bufferSize: int): RFontFace =
   ## Loads a font file from the given filename. Returns nil if the font
   ## is unloadable, or a reference to a font face object.
   doAssert(false)
 
-method LoadPrivateFaceFromFile*(self: RTypefaceSystem; filename: string): RFontFace =
+method LoadPrivateFaceFromFile*(self: RTypefaceSystem; filename: string; size: int): RFontFace =
   ## Loads a font file from the given filename. Returns nil if the font
   ## is unloadable, or a reference to a font face object.
   doAssert(false)
@@ -86,7 +86,7 @@ method DeselectGlyph*(self: FontFace) =
 
 # Metrics {{{2
 
-method MetricActiveGlyph*(self: FontFace): GlyphMetrics =
+method MetricActiveGlyph*(self: FontFace): FaceGlyphMetrics =
   ## Asks the font for the metrics on the currently selected glyph.
   doAssert(false)
 
