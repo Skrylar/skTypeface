@@ -63,7 +63,7 @@ method LoadPrivateFaceFromFile*(self: RTypefaceSystem; filename: string; size: i
 
 # Kerning {{{1
 
-method KerningPair*(self: FontFace; first, second: uint32): int =
+method KerningPair*(self: RFontFace; first, second: uint32): int =
   ## Asks the font to look up the kerning pair between the first and
   ## second Unicode code points. The number of pixels the second glyph
   ## should be horizontally translated is returned.
@@ -75,13 +75,13 @@ method KerningPair*(self: FontFace; first, second: uint32): int =
 
 # Selection {{{2
 
-method SelectGlyph*(self: FontFace; glyph: uint32) =
+method SelectGlyph*(self: RFontFace; glyph: uint32) =
   ## Asks the font to select a glyph with the given Unicode code point.
   ## That glyph, if available, will be selected after this method is
   ## called.
   discard
 
-method DeselectGlyph*(self: FontFace) =
+method DeselectGlyph*(self: RFontFace) =
   ## Asks the font to deselect the current glyph (if any.) No glyph will
   ## be selected after this method is called.
   discard
@@ -90,7 +90,7 @@ method DeselectGlyph*(self: FontFace) =
 
 # Metrics {{{2
 
-method MetricActiveGlyph*(self: FontFace): FaceGlyphMetrics =
+method MetricActiveGlyph*(self: RFontFace): FaceGlyphMetrics =
   ## Asks the font for the metrics on the currently selected glyph.
   doAssert(false)
 
@@ -98,14 +98,14 @@ method MetricActiveGlyph*(self: FontFace): FaceGlyphMetrics =
 
 # Rendering {{{2
 
-method RasterizeActiveGlyph*(self: FontFace; style: NRasterizeStyle; cb: FRasterizeFacePixel) =
+method RasterizeActiveGlyph*(self: RFontFace; style: NRasterizeStyle; cb: FRasterizeFacePixel) =
   ## Asks the font to rasterize a glyph in to a given rasterization
   ## style; the provided closure is invoked for each pixel, allowing
   ## full control over where the result is painted. On some backends
   ## this version of `Rasterize` avoids extra allocations.
   doAssert(false)
 
-method RasterizeActiveGlyph*(self: FontFace; style: NRasterizeStyle; width, height: var int): pointer =
+method RasterizeActiveGlyph*(self: RFontFace; style: NRasterizeStyle; width, height: var int): pointer =
   ## Asks the font to rasterize a glyph in to a given rasterization
   ## style, returning the buffer along with its width and height.
   doAssert(false)
