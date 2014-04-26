@@ -47,6 +47,7 @@ const
   FF_DONTCARE         = 0
   MM_TEXT             = 1
   GGO_METRICS         = 0
+  GGO_GRAY8_BITMAP    = 6
   GDI_ERROR           = 0xFFFFFFFF.DWORD
   LOGPIXELSY          = 90
 
@@ -55,10 +56,10 @@ proc CreateFont(nHeight, nWidth, nEscapement, nOrientation, fnWeight: cint;
   fdwOutputPrecision, fdwClipPrecision, fdwQuality,
   fdwPitchAndFamily: DWORD; lpszFace: cstring): HFONT {.importc: "CreateFontA", stdcall.}
 proc DeleteObject(hObject: HGDIOBJ): WinBool {.importc: "DeleteObject", stdcall.}
-proc GetGlyphOutline(
+proc GetGlyphOutlineA(
   handle: HDC; uChar, uFormat: cuint; lpgm: ptr GlyphMetrics;
-  cbBuffer: DWORD; lpvBuffer: ptr pointer; lpmat2: PMAT2
-  ): DWORD {.importc: "GetGlyphOutline", stdcall.}
+  cbBuffer: DWORD; lpvBuffer: pointer; lpmat2: PMAT2
+  ): DWORD {.importc: "GetGlyphOutlineA", stdcall.}
 proc GetDC(handle: HWND): HDC {.importc: "GetDC", stdcall.}
 proc ReleaseDC(handle: HWND; context: HDC): cint {.importc: "ReleaseDC", stdcall.}
 proc SetMapMode(handle: HDC; fnMapMode: cint): cint {.importc: "SetMapMode", stdcall.}
@@ -264,11 +265,49 @@ method MetricActiveGlyph*(self: RGdiFontFace): FaceGlyphMetrics =
 
 # Rendering {{{2
 
-method RasterizeActiveGlyph*(self: RGdiFontFace; style: NRasterizeStyle; cb: FRasterizeFacePixel) =
-  doAssert(false)
+method RasterizeActiveGlyph*(self: RGdiFontFace; style: NRasterizeStyle;
+  cb: FRasterizeFacePixel) =
+    doAssert(false)
 
-method RasterizeActiveGlyph*(self: RGdiFontFace; style: NRasterizeStyle; width, height: var int): pointer =
-  doAssert(false)
+method RasterizeActiveGlyph*(self: RGdiFontFace; style: NRasterizeStyle;
+  width, height: var int; buffer: var seq[uint8]): bool =
+    # TODO: Support the monochrome rasterizer.
+    doAssert(style == rsGreyscale, "Only greyscale rasterizer is supported.")
+    if self.selected > 0.uint32:
+      # Select our font
+      let sizzurp = SelectObject(self.context, self.handle)
+      # Now rasterize
+      var metrics: GLYPHMETRICS
+      # Check the size of a buffer we will require
+      discard SetMapMode(self.context, MM_TEXT)
+      let required = GetGlyphOutlineA(self.context, self.selected.cuint,
+        GGO_GRAY8_BITMAP.cuint, addr(metrics),
+        0.cuint, nil, addr(identityMatrix))
+      doAssert(required > 0.dword,
+        "Could not get buffer size for glyph rendering.")
+      # Prepare buffer space
+      if buffer == nil:
+        newSeq(buffer, required.int)
+      else:
+        buffer.setLen(required.int)
+      let result = GetGlyphOutlineA(self.context, self.selected.cuint,
+        GGO_GRAY8_BITMAP.cuint, addr(metrics), required,
+        cast[pointer](addr(buffer[0])), addr(identityMatrix))
+      doAssert(result != GDI_ERROR.dword, "Could not rasterize glyph.")
+      # Now lets do some stupid shit to clean up after windows
+      let stride = (metrics.gmBlackBoxX + 3) and (not 3.cuint)
+      # Return the metrics
+      # TODO: Correct the output buffer instead of doing this crap
+      width = stride.int
+      height = metrics.gmBlackBoxY.int
+      # Return sizzurp
+      discard SelectObject(self.context, sizzurp)
+      # We're done
+      return true
+    else:
+      width = 0
+      height = 0
+      return false
 
 # }}} rendering
 
@@ -286,6 +325,24 @@ when isMainModule:
   echo "Bounds: ", g
   let k = arial.KerningPair('W'.uint32, 'A'.uint32)
   echo "Kerning W/A: ", k
+  var outbuf: seq[uint8]
+  var width, height: int
+
+  doAssert(arial.RasterizeActiveGlyph(rsGreyscale, width, height, outbuf) == true,
+    "Could not rasterize test character.")
+  
+  debugEcho "Rasterized ", width, "x", height," glyph:"
+  var outStr: string = ""
+  setLen(outStr, width)
+  for y in 0..height-1:
+    for x in 0..width-1:
+      let v = outbuf[(y*width)+x]
+      outStr[x] = '.'
+      if v > 10.uint8: outStr[x] = ','
+      if v > 25.uint8: outStr[x] = ';'
+      if v > 50.uint8: outStr[x] = '#'
+    echo outStr
+
   arial.DeselectGlyph
 
 # }}} testing

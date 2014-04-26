@@ -105,10 +105,11 @@ method RasterizeActiveGlyph*(self: RFontFace; style: NRasterizeStyle; cb: FRaste
   ## this version of `Rasterize` avoids extra allocations.
   doAssert(false)
 
-method RasterizeActiveGlyph*(self: RFontFace; style: NRasterizeStyle; width, height: var int): pointer =
-  ## Asks the font to rasterize a glyph in to a given rasterization
-  ## style, returning the buffer along with its width and height.
-  doAssert(false)
+method RasterizeActiveGlyph*(self: RFontFace; style: NRasterizeStyle;
+  width, height: var int; buffer: var seq[uint8]): bool =
+    ## Asks the font to rasterize a glyph in to a given rasterization
+    ## style, returning the buffer along with its width and height.
+    doAssert(false)
 
 # }}} rendering
 
