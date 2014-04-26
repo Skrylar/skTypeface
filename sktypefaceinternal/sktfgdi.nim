@@ -300,6 +300,14 @@ method RasterizeActiveGlyph*(self: RGdiFontFace; style: NRasterizeStyle;
       # TODO: Correct the output buffer instead of doing this crap
       width = stride.int
       height = metrics.gmBlackBoxY.int
+      # Correct the results to 0-255
+      for y in 0..height-1:
+        for x in 0..width-1:
+          let offset = (y*width)+x
+          if buffer[offset] > 63.uint8:
+            buffer[offset] = 255.uint8
+          else:
+            buffer[offset] = (buffer[offset] shl 2) or (buffer[offset] and 0x03).uint8
       # Return sizzurp
       discard SelectObject(self.context, sizzurp)
       # We're done
@@ -338,9 +346,7 @@ when isMainModule:
     for x in 0..width-1:
       let v = outbuf[(y*width)+x]
       outStr[x] = '.'
-      if v > 10.uint8: outStr[x] = ','
-      if v > 25.uint8: outStr[x] = ';'
-      if v > 50.uint8: outStr[x] = '#'
+      if v > 128.uint8: outStr[x] = '#'
     echo outStr
 
   arial.DeselectGlyph
