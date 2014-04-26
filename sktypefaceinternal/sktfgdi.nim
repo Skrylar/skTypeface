@@ -95,11 +95,12 @@ type
     kerning  : seq[WinKERNINGPAIR]
     context  : HDC
     handle   : HFONT
-    selected : uint32
+    selected : uint32     ## Currently selected glyph.
 
 # Cleanup {{{1
 
 proc FinalizeGdiFace(self: RGdiFontFace) =
+  self.DeselectGlyph
   doAssert(DeleteObject(self.handle.HGDIOBJ) != 0,
     "Could not free font handle.")
 
