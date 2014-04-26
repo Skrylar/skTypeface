@@ -67,6 +67,16 @@ proc MulDiv(nNumber, nNumerator, nDenominator: cint): cint {.importc: "MulDiv", 
 proc GetDeviceCaps(context: HDC; nIndex: cint): cint {.importc: "GetDeviceCaps", stdcall.}
 proc GetKerningPairs(context: HDC; nNumPairs: DWORD; lpkrnpair: ptr WinKERNINGPAIR): DWORD {.importc: "GetKerningPairs", stdcall.}
 
+var identityMatrix: MAT2
+identityMatrix.eM11.fract = 0
+identityMatrix.eM11.value = 1
+identityMatrix.eM12.fract = 0
+identityMatrix.eM12.value = 0
+identityMatrix.eM21.fract = 0
+identityMatrix.eM21.value = 0
+identityMatrix.eM22.fract = 0
+identityMatrix.eM22.value = 1
+
 proc Weight(self: NFaceStyle): int =
   case self
   of fsPlain, fsItalic:
@@ -225,18 +235,6 @@ method DeselectGlyph*(self: RGdiFontFace) =
 
 method MetricActiveGlyph*(self: RGdiFontFace): FaceGlyphMetrics =
   if self.selected == 0: return
-  discard SetMapMode(self.context, MM_TEXT)
-
-  # XXX: Can we cache this somewhere to speed things up?
-  var matrix: MAT2
-  matrix.eM11.fract = 0
-  matrix.eM11.value = 1
-  matrix.eM12.fract = 0
-  matrix.eM12.value = 0
-  matrix.eM21.fract = 0
-  matrix.eM21.value = 0
-  matrix.eM22.fract = 0
-  matrix.eM22.value = 1
 
   # Select our font of inquiry
   let sizzurp = SelectObject(self.context, self.handle)
@@ -245,8 +243,9 @@ method MetricActiveGlyph*(self: RGdiFontFace): FaceGlyphMetrics =
 
   # Grab metric info
   var metrics: GLYPHMETRICS
-  let x = GetGlyphOutline(self.context, self.selected,
-    GGO_METRICS, addr(metrics), 0, nil, addr(matrix))
+  discard SetMapMode(self.context, MM_TEXT)
+  let x = GetGlyphOutlineA(self.context, self.selected,
+    GGO_METRICS, addr(metrics), 0, nil, addr(identityMatrix))
   doAssert(x != GDI_ERROR, "Grabbing metrics failed.")
 
   # Put the fonts back where we found them
