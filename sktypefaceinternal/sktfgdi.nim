@@ -34,6 +34,10 @@ type
     gmptGlyphOrigin: POINT
     gmCellIncX, gmCellIncY: SHORT
 
+  WinKERNINGPAIR = object {.importc: "KERNINGPAIR".}
+    wFirst, wSecond: WORD
+    iKernAmount: cint
+
 const
   DEFAULT_CHARSET     = 1
   OUT_DEFAULT_PRECIS  = 0
@@ -61,6 +65,7 @@ proc SetMapMode(handle: HDC; fnMapMode: cint): cint {.importc: "SetMapMode", std
 proc SelectObject(context: HDC; obj: HGDIOBJ): HGDIOBJ {.importc: "SelectObject", stdcall.}
 proc MulDiv(nNumber, nNumerator, nDenominator: cint): cint {.importc: "MulDiv", stdcall.}
 proc GetDeviceCaps(context: HDC; nIndex: cint): cint {.importc: "GetDeviceCaps", stdcall.}
+proc GetKerningPairs(context: HDC; nNumPairs: DWORD; lpkrnpair: ptr WinKERNINGPAIR): DWORD {.importc: "GetKerningPairs", stdcall.}
 
 proc Weight(self: NFaceStyle): int =
   case self
@@ -87,6 +92,7 @@ type
   RGdiFontFace* = ref GdiFontFace
   GdiFontFace*  = object of FontFace
     parent   : RGdiTypefaceSystem
+    kerning  : seq[WinKERNINGPAIR]
     context  : HDC
     handle   : HFONT
     selected : uint32
@@ -142,6 +148,7 @@ method LoadPublicFace*(self: RGdiTypefaceSystem;
       face.parent   = self
       face.handle   = handle
       face.context  = HDC(nil)
+      face.kerning  = nil
       face.selected = 0
       return face
 
@@ -169,7 +176,29 @@ method LoadPrivateFaceFromFile*(self: RTypefaceSystem; filename: string; size: i
 # Kerning {{{1
 
 method KerningPair*(self: RGdiFontFace; first, second: uint32): int =
-  doAssert(false)
+  # Initialize the kerning table, if necessary
+  if self.kerning == nil:
+    let dc = GetDC(nil.HDC)                       # Get a screen DC
+    let oldFont = SelectObject(dc, self.handle.HGDIOBJ)
+    let tableLength = GetKerningPairs(dc, 0, nil) # Get pair count
+    if tableLength > 0.dword:
+      newSeq(self.kerning, tableLength.int) # Create local table for reception
+      let received = GetKerningPairs(dc, tableLength, addr(self.kerning[0]))
+      doAssert(received == tableLength,
+        "Did not receive as many kerning pairs as expected.")
+      discard SelectObject(dc, oldFont)
+      discard ReleaseDC(nil.HWND, dc) # Return the screen DC
+    else:
+      discard SelectObject(dc, oldFont)
+      discard ReleaseDC(nil.HWND, dc) # Return the screen DC
+      return 0
+
+  # Search the kerning table for our entry
+  for x in items(self.kerning):
+    if x.wFirst != first.WORD: continue
+    if x.wSecond != second.WORD: continue
+    return x.iKernAmount.int
+  return 0
 
 # }}} kerning
 
@@ -254,7 +283,9 @@ when isMainModule:
   doAssert(arial != nil, "Arial font was [somehow] not created.")
   arial.SelectGlyph('g'.uint32)
   let g = arial.MetricActiveGlyph()
-  echo g
+  echo "Bounds: ", g
+  let k = arial.KerningPair('W'.uint32, 'A'.uint32)
+  echo "Kerning W/A: ", k
   arial.DeselectGlyph
 
 # }}} testing
