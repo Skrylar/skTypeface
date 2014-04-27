@@ -98,12 +98,13 @@ method MetricActiveGlyph*(self: RFontFace): FaceGlyphMetrics =
 
 # Rendering {{{2
 
-method RasterizeActiveGlyph*(self: RFontFace; style: NRasterizeStyle; cb: FRasterizeFacePixel) =
-  ## Asks the font to rasterize a glyph in to a given rasterization
-  ## style; the provided closure is invoked for each pixel, allowing
-  ## full control over where the result is painted. On some backends
-  ## this version of `Rasterize` avoids extra allocations.
-  doAssert(false)
+method RasterizeActiveGlyph*(self: RFontFace; style: NRasterizeStyle;
+  width, height: var int; cb: FRasterizeFacePixel): bool =
+    ## Asks the font to rasterize a glyph in to a given rasterization
+    ## style; the provided closure is invoked for each pixel, allowing
+    ## full control over where the result is painted. On some backends
+    ## this version of `Rasterize` avoids extra allocations.
+    doAssert(false)
 
 method RasterizeActiveGlyph*(self: RFontFace; style: NRasterizeStyle;
   width, height: var int; buffer: var seq[uint8]): bool =

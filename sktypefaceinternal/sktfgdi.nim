@@ -265,11 +265,7 @@ method MetricActiveGlyph*(self: RGdiFontFace): FaceGlyphMetrics =
 
 # Rendering {{{2
 
-method RasterizeActiveGlyph*(self: RGdiFontFace; style: NRasterizeStyle;
-  cb: FRasterizeFacePixel) =
-    doAssert(false)
-
-method RasterizeActiveGlyph*(self: RGdiFontFace; style: NRasterizeStyle;
+proc RasterizeActiveGlyphImpl(self: RGdiFontFace; style: NRasterizeStyle;
   width, height: var int; buffer: var seq[uint8]): bool =
     # TODO: Support the monochrome rasterizer.
     doAssert(style == rsGreyscale, "Only greyscale rasterizer is supported.")
@@ -297,17 +293,8 @@ method RasterizeActiveGlyph*(self: RGdiFontFace; style: NRasterizeStyle;
       # Now lets do some stupid shit to clean up after windows
       let stride = (metrics.gmBlackBoxX + 3) and (not 3.cuint)
       # Return the metrics
-      # TODO: Correct the output buffer instead of doing this crap
       width = stride.int
       height = metrics.gmBlackBoxY.int
-      # Correct the results to 0-255
-      for y in 0..height-1:
-        for x in 0..width-1:
-          let offset = (y*width)+x
-          if buffer[offset] > 63.uint8:
-            buffer[offset] = 255.uint8
-          else:
-            buffer[offset] = (buffer[offset] shl 2) or (buffer[offset] and 0x03).uint8
       # Return sizzurp
       discard SelectObject(self.context, sizzurp)
       # We're done
@@ -316,6 +303,33 @@ method RasterizeActiveGlyph*(self: RGdiFontFace; style: NRasterizeStyle;
       width = 0
       height = 0
       return false
+
+method RasterizeActiveGlyph*(self: RGdiFontFace; style: NRasterizeStyle;
+  width, height: var int; cb: FRasterizeFacePixel): bool =
+    var buffer: seq[uint8]
+    result = RasterizeActiveGlyphImpl(self, style, width, height, buffer)
+    for y in 0..height-1:
+      for x in 0..width-1:
+        let offset = (y*width)+x
+        let intensity = if buffer[offset] > 63.uint8:
+            255.uint8
+          else:
+            (buffer[offset] shl 2) or (buffer[offset] and 0x03).uint8
+        cb(x, y, intensity.int)
+
+method RasterizeActiveGlyph*(self: RGdiFontFace; style: NRasterizeStyle;
+  width, height: var int; buffer: var seq[uint8]): bool =
+    result = RasterizeActiveGlyphImpl(self, style, width, height, buffer)
+    if result:
+      # Correct the results to 0-255
+      # TODO: Correct the output buffer instead of doing this crap
+      for y in 0..height-1:
+        for x in 0..width-1:
+          let offset = (y*width)+x
+          if buffer[offset] > 63.uint8:
+            buffer[offset] = 255.uint8
+          else:
+            buffer[offset] = (buffer[offset] shl 2) or (buffer[offset] and 0x03).uint8
 
 # }}} rendering
 
