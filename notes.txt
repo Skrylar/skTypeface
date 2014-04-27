@@ -1,0 +1,15 @@
+skTypeface Notes
+
+-   The results of width/height from rasterization may differ from the glyph metrics function.
+
+    This is an artifact of the backend (GDI is really silly) and needs some
+    tending to.   
+    Trust the results of the glyph measuring function, and apply clipping to
+    the rasterized output when needed.
+
+-   There is no support for FreeType2 or OS X *at the moment*.
+
+    Support is easily bolted on and planned, I just want to get on with
+    other things at the moment.
+
+
