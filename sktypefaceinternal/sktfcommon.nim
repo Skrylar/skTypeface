@@ -1,5 +1,10 @@
 
 type
+  ## Describes the style of font face which is being requested. Only
+  ## public fonts allow this, as they will automatically determine the
+  ## correct font for the style and synthesize one if needed. Private
+  ## fonts are loaded as-is from their files, and it is assumed you
+  ## already know the style when you are asking for the TTF directly.
   NFaceStyle* = enum
     fsPlain
     fsBold
@@ -8,24 +13,34 @@ type
     fsLight
     fsLightItalic
 
+  ## Describes the type of rasterization result that is desired. If the
+  ## subsystem does anything special for the style (some fonts won't be
+  ## antialiased for monochrome renders) then that will be invoked,
+  ## otherwise the closest method is run and the result is corrected
+  ## before being returned.
   NRasterizeStyle* = enum
-    rsMonochrome
-    rsGreyscale
+    rsMonochrome ## Returned values will be 0 or 1.
+    rsGreyscale  ## Returned values will be normalized from 0-255.
 
   RTypefaceSystem* = ref TypefaceSystem
   TypefaceSystem*  = object {.inheritable.}
+    ## A system which provides access to type faces.
 
   RFontFace* = ref FontFace
   FontFace*  = object {.inheritable.}
+    ## An object which provides access to a single font face of a given
+    ## size and style.
 
-  ## Metrics for a single glyph within a font face. Note that skTypeface
-  ## metrics are always returned in pixels, regardless of the font
-  ## system's native preference.
   FaceGlyphMetrics* = object {.final.}
+    ## Metrics for a single glyph within a font face. Note that
+    ## skTypeface metrics are always returned in pixels, regardless of
+    ## the font system's native preference.
     boundingWidth*, boundingHeight*: int
     advanceWidth*, advanceHeight*: int
     offsetX*, offsetY*: int
 
+  ## Callback invoked when asked to rasterize a glyph using the callback
+  ## technique.
   FRasterizeFacePixel* = proc(x, y, amount: int) {.closure.}
 
 # Public fonts {{{1
@@ -78,7 +93,11 @@ method KerningPair*(self: RFontFace; first, second: uint32): int =
 method SelectGlyph*(self: RFontFace; glyph: uint32) =
   ## Asks the font to select a glyph with the given Unicode code point.
   ## That glyph, if available, will be selected after this method is
-  ## called.
+  ## called. Note that when glyphs are selected, some extra resources
+  ## might be allocated to facilitate extracting data from it; so when
+  ## you are done with a glyph, either `SelectGlyph` the next one you
+  ## need or explicitly `DeselectGlyph` if you won't need the typeface
+  ## for a while.
   discard
 
 method DeselectGlyph*(self: RFontFace) =
